@@ -150,7 +150,7 @@ class LivePortraitPipeline(object):
                 n_frames = len(source_rgb_lst)
             else:
                 n_frames = driving_n_frames
-            if inf_cfg.flag_crop_driving_video or (not is_square_video(args.driving)):
+            if inf_cfg.flag_crop_driving_video: #or (not is_square_video(args.driving)):
                 ret_d = self.cropper.crop_driving_video(driving_rgb_lst)
                 log(f'Driving video is cropped, {len(ret_d["frame_crop_lst"])} frames are processed.')
                 if len(ret_d["frame_crop_lst"]) is not n_frames and flag_is_driving_video:
@@ -161,15 +161,14 @@ class LivePortraitPipeline(object):
                 driving_lmk_crop_lst = self.cropper.calc_lmks_from_cropped_video(driving_rgb_lst)
                 driving_rgb_crop_256x256_lst = [cv2.resize(_, (256, 256)) for _ in driving_rgb_lst]  # force to resize to 256x256
             #######################################
-
             c_d_eyes_lst, c_d_lip_lst = self.live_portrait_wrapper.calc_ratio(driving_lmk_crop_lst)
             # save the motion template
             I_d_lst = self.live_portrait_wrapper.prepare_videos(driving_rgb_crop_256x256_lst)
             driving_template_dct = self.make_motion_template(I_d_lst, c_d_eyes_lst, c_d_lip_lst, output_fps=output_fps)
 
             wfp_template = remove_suffix(args.driving) + '.pkl'
-            dump(wfp_template, driving_template_dct)
-            log(f"Dump motion template to {wfp_template}")
+            # dump(wfp_template, driving_template_dct)
+            # log(f"Dump motion template to {wfp_template}")
         else:
             raise Exception(f"{args.driving} does not exist!")
         if not flag_is_driving_video:
@@ -461,7 +460,7 @@ class LivePortraitPipeline(object):
             else:
                 frames_concatenated = concat_frames(driving_rgb_crop_256x256_lst*n_frames, img_crop_256x256_lst, I_p_lst)
         else:
-            frames_concatenated = concat_frames(driving_rgb_crop_256x256_lst, [img_crop_256x256], I_p_lst)
+            frames_concatenated =  I_p_lst
 
         if flag_is_driving_video or (flag_is_source_video and not flag_is_driving_video):
             flag_source_has_audio = flag_is_source_video and has_audio_stream(args.source)
@@ -506,7 +505,7 @@ class LivePortraitPipeline(object):
         else:
             wfp_concat = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat.jpg')
             cv2.imwrite(wfp_concat, frames_concatenated[0][..., ::-1])
-            wfp = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}.jpg')
+            wfp = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}.png')
             if I_p_pstbk_lst is not None and len(I_p_pstbk_lst) > 0:
                 cv2.imwrite(wfp, I_p_pstbk_lst[0][..., ::-1])
             else:
