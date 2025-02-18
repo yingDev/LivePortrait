@@ -177,7 +177,7 @@ class LivePortraitPipeline(object):
 
         ######## prepare for pasteback ########
         I_p_pstbk_lst = None
-        if inf_cfg.flag_pasteback and inf_cfg.flag_do_crop and inf_cfg.flag_stitching:
+        if inf_cfg.flag_pasteback and inf_cfg.flag_do_crop: #and inf_cfg.flag_stitching:
             I_p_pstbk_lst = []
             log("Prepared pasteback mask done.")
 
@@ -261,7 +261,7 @@ class LivePortraitPipeline(object):
                 if combined_lip_ratio_tensor_before_animation[0][0] >= inf_cfg.lip_normalize_threshold:
                     lip_delta_before_animation = self.live_portrait_wrapper.retarget_lip(x_s, combined_lip_ratio_tensor_before_animation)
 
-            if inf_cfg.flag_pasteback and inf_cfg.flag_do_crop and inf_cfg.flag_stitching:
+            if inf_cfg.flag_pasteback and inf_cfg.flag_do_crop: # and inf_cfg.flag_stitching:
                 mask_ori_float = prepare_paste_back(inf_cfg.mask_crop, crop_info['M_c2o'], dsize=(source_rgb_lst[0].shape[1], source_rgb_lst[0].shape[0]))
 
         ######## animate ########
@@ -440,7 +440,7 @@ class LivePortraitPipeline(object):
             I_p_i = self.live_portrait_wrapper.parse_output(out['out'])[0]
             I_p_lst.append(I_p_i)
 
-            if inf_cfg.flag_pasteback and inf_cfg.flag_do_crop and inf_cfg.flag_stitching:
+            if inf_cfg.flag_pasteback and inf_cfg.flag_do_crop: # and inf_cfg.flag_stitching:
                 # TODO: the paste back procedure is slow, considering optimize it using multi-threading or GPU
                 if flag_is_source_video:
                     I_p_pstbk = paste_back(I_p_i, source_M_c2o_lst[i], source_rgb_lst[i], mask_ori_float)
@@ -503,8 +503,8 @@ class LivePortraitPipeline(object):
             log(f'Animated video: {wfp}')
             log(f'Animated video with concat: {wfp_concat}')
         else:
-            wfp_concat = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat.jpg')
-            cv2.imwrite(wfp_concat, frames_concatenated[0][..., ::-1])
+            # wfp_concat = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat.jpg')
+            # cv2.imwrite(wfp_concat, frames_concatenated[0][..., ::-1])
             wfp = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}.png')
             if I_p_pstbk_lst is not None and len(I_p_pstbk_lst) > 0:
                 cv2.imwrite(wfp, I_p_pstbk_lst[0][..., ::-1])
@@ -512,6 +512,6 @@ class LivePortraitPipeline(object):
                 cv2.imwrite(wfp, frames_concatenated[0][..., ::-1])
             # final log
             log(f'Animated image: {wfp}')
-            log(f'Animated image with concat: {wfp_concat}')
+            # log(f'Animated image with concat: {wfp_concat}')
 
         return wfp, wfp_concat
